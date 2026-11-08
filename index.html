@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haldia Food Express</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <style> ​@keyframes pulse-slow {
+0%, 100% { transform: scale(1); opacity: 1; }
+50% { transform: scale(1.05); opacity: 0.9; }
+}.
+.animate-pulse-slow {
+  animation: pulse-slow 2s infinite ease-in-out;
+}
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .modal-backdrop { transition: opacity 0.3s ease-in-out; }
+        .modal-content { transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
+        .glass-header { backdrop-filter: blur(12px); background: rgba(255, 255, 255, 0.85); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-rose-50 via-orange-50 to-amber-50 min-h-screen pb-28 font-sans text-gray-800 selection:bg-rose-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="glass-header sticky top-0 z-40 shadow-sm border-b border-rose-100/60">
+        <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 bg-gradient-to-tr from-rose-600 to-pink-600 rounded-2xl flex items-center justify-center text-white shadow-md shadow-rose-200">
+                    <i class="fa-solid fa-utensils text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-black text-gray-900 tracking-tight leading-none">Haldia Food <span class="text-rose-600">Express</span></h1>
+                    <p class="text-[11px] font-medium text-gray-500 flex items-center gap-1 mt-0.5">
+                        <i class="fa-solid fa-location-dot text-rose-600"></i> Haldia City Centre
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <button onclick="window.location.href='checkout.html'" class="relative p-2 text-gray-700 hover:text-rose-700 transition">
+                    <i class="fa-solid fa-bag-shopping text-xl"></i>
+                    <span id="headerCartCount" class="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">0</span>
+                </button>
+                <button onclick="openAuthModal()" class="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition shadow-sm shadow-rose-200">Sign In</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-md mx-auto px-4 mt-4 space-y-5">
+
+        <!-- Search Bar -->
+        <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input type="text" id="searchInput" oninput="filterFoodItems()" placeholder="Search biryani, momo, rolls..." class="w-full pl-11 pr-10 py-2.5 bg-white border border-rose-200 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500/50 shadow-sm transition">
+            <button onclick="resetFilter()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Categories (Grid Layout) -->
+        <div>
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-xs font-extrabold uppercase tracking-wider text-gray-400">Categories</h2>
+                <button onclick="resetFilter()" class="text-xs font-bold text-rose-600 hover:underline">View All</button>
+            </div>
+            <div class="grid grid-cols-4 gap-2.5">
+                <div onclick="filterCategory('biryani')" class="cursor-pointer group bg-white p-2 rounded-2xl border border-rose-200/80 shadow-sm hover:border-rose-400 transition text-center">
+                    <img src="i.jpg"
+                    <span class="text-[10px] font-bold text-gray-800 block truncate">Biryani</span>
+                </div>
+                <div onclick="filterCategory('thali')" class="cursor-pointer group bg-white p-2 rounded-2xl border border-rose-200/80 shadow-sm hover:border-rose-400 transition text-center">
+                    <img src="fbhat.jpg"
+                    <span class="text-[10px] font-bold text-gray-800 block truncate">Thali</span>
+                </div>
+                <div onclick="filterCategory('roti')" class="cursor-pointer group bg-white p-2 rounded-2xl border border-rose-200/80 shadow-sm hover:border-rose-400 transition text-center">
+                    <img src="rotip.jpg"
+                    <span class="text-[10px] font-bold text-gray-800 block truncate">Roti & Tadka</span>
+                </div>
+                <div onclick="filterCategory('snacks')" class="cursor-pointer group bg-white p-2 rounded-2xl border border-rose-200/80 shadow-sm hover:border-rose-400 transition text-center">
+                    <img src="o.jpg"
+                    <span class="text-[10px] font-bold text-gray-800 block truncate">Snacks</span>
+                </div>
+                <div onclick="filterCategory('chowmein')" class="cursor-pointer group bg-white p-2 rounded-2xl border border-rose-200/80 shadow-sm hover:border-rose-400 transition text-center">
+                    <img src="ooo.jpg"
+                    <span class="text-[10px] font-bold text-gray-800 block truncate">Chowmein</span>
+                </div>
+                <div onclick="filterCategory('drinks')" class="cursor-pointer group bg-white p-2 rounded-2xl border border-rose-200/80 shadow-sm hover:border-rose-400 transition text-center">
+                    <img src="heelo.jpg"
+                    <span class="text-[10px] font-bold text-gray-800 block truncate">Drinks</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu Items List -->
+        <div>
+            <h2 class="text-xs font-extrabold uppercase tracking-wider text-gray-400 mb-3">Menu Items</h2>
+            <div id="food-container" class="space-y-3">
+                <!-- Rendered Dynamically -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Cart Floating Bar -->
+   <div id="cartSummary" class="fixed bottom-4 left-0 right-0 max-w-md mx-auto px-4 z-30 hidden animate-pulse-slow">
+        <div onclick="window.location.href='checkout.html'" class="bg-gray-900/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-xl flex items-center justify-between cursor-pointer hover:bg-gray-900 transition border border-gray-800">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-rose-600 text-white rounded-xl flex items-center justify-center font-black text-sm shadow-md shadow-rose-950/50" id="cartCount">0</div>
+                <div>
+                    <p class="text-xs font-bold leading-tight">Your Cart</p>
+                    <p class="text-[10px] text-gray-400">Tap to review & checkout</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span id="cartTotal" class="text-sm font-black text-rose-400">₹0.00</span>
+                <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customization Modal -->
+    <div id="customizationModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity modal-backdrop" onclick="closeCustomizationModal()"></div>
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 shadow-2xl relative z-10 modal-content max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                <div>
+                    <h3 id="modalItemTitle" class="text-base font-extrabold text-gray-900">Add Customization</h3>
+                    <p id="modalItemSub" class="text-xs text-gray-500 mt-0.5">Select option and extras</p>
+                </div>
+                <button onclick="closeCustomizationModal()" class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-800 transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <div class="overflow-y-auto flex-1 my-4 space-y-4 pr-1" id="modalOptionsBody">
+                <!-- Dynamic Options Rendered Here -->
+            </div>
+
+            <div class="pt-3 border-t border-gray-100 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Total Amount</span>
+                    <span id="modalTotalPrice" class="text-base font-black text-rose-600">₹0.00</span>
+                </div>
+                <button id="modalAddBtn" class="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white font-bold text-xs px-6 py-2.5 rounded-xl transition shadow-md shadow-rose-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-cart-shopping"></i> Add to Cart
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closeAuthModal()"></div>
+        <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl relative z-10 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+            <h3 class="text-base font-extrabold text-gray-900 mb-1">Sign In / Register</h3>
+            <p class="text-xs text-gray-500 mb-4">Access your order history and live status</p>
+            
+            <button onclick="handleGoogleSignIn()" class="w-full bg-gray-50 border border-gray-200 py-2.5 rounded-xl text-xs font-bold text-gray-800 flex items-center justify-center gap-2 hover:bg-gray-100 transition shadow-xs">
+                <i class="fa-brands fa-google text-rose-600 text-sm"></i> Continue with Google
+            </button>
+
+            <div class="relative flex py-3 items-center">
+                <div class="flex-grow border-t border-gray-200"></div>
+                <span class="flex-shrink mx-3 text-gray-400 text-[10px] uppercase font-bold tracking-wider">Or Mobile</span>
+                <div class="flex-grow border-t border-gray-200"></div>
+            </div>
+
+            <div class="space-y-2.5">
+                <input type="tel" id="phoneNumber" placeholder="10-digit Mobile Number" class="w-full border border-gray-200 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-rose-500/50 outline-none">
+                <div id="otpSection" class="hidden">
+                    <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" class="w-full border border-gray-200 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-rose-500/50 outline-none mt-2">
+                </div>
+                <button id="authActionBtn" onclick="handlePhoneAuthStep()" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl text-xs font-bold transition shadow-sm">Send OTP</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyD0LJAPGx9sIi1Y9E6SdBlen115dRQbQCYw",
+            authDomain: "food-delivery-app-24517.firebaseapp.com",
+            projectId: "food-delivery-app-24517",
+            storageBucket: "food-delivery-app-24517.firebasestorage.app",
+            messagingSenderId: "869509993841",
+            appId: "1:869509993841:web:d968d5491ca1719ec2d2d0",
+            measurementId: "G-3TG0883F50"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Dataset updated: Standalone Roti fully removed
+        const menuItems = [
+            { 
+                id: 'puri_sabzi', 
+                name: 'Puri Sabzi', 
+                portion: '1 Plet', 
+                price: 50, 
+                category: 'thali', 
+                img: 'puri.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97ea8?w=200', 
+                extras: [
+                    { id: 'ex_puri', name: 'Extra Puri (1 Pc)', price: 10 }, 
+                    { id: 'ex_sabzi', name: 'Extra Sabzi', price: 20 }
+                ] 
+            },
+            { 
+                id: 'roti_sabzi', 
+                name: 'Roti Sabzi', 
+                portion: '1 Plet', 
+                price: 80, 
+                category: 'roti', 
+                img: 'roti.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1541529086526-db283c563270?w=200', 
+                extras: [
+                    { id: 'ex_roti', name: 'Extra Roti (1 Pc)', price: 7 },
+                    { id: 'ex_sabzi', name: 'Extra Sabzi', price: 25 }
+                ] 
+            },
+            { 
+                id: 'roti_tadka', 
+                name: 'Roti Tadka', 
+                portion: '1 Plet', 
+                price: 100, 
+                category: 'roti', 
+                img: 'rtadka.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1541529086526-db283c563270?w=200', 
+                extras: [
+                    { id: 'ex_roti', name: 'Extra Roti (1 Pc)', price: 7 },
+                    { id: 'ex_tadka', name: 'Extra Tadka', price: 30 }
+                ] 
+            },
+            { 
+                id: 'veg_bhat', 
+                name: 'Veg Bhat', 
+                portion: '1 Plet', 
+                price: 80, 
+                category: 'thali', 
+                img: 'vegb.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97ea8?w=200', 
+                extras: [
+                    { id: 'ex_rice', name: 'Extra Rice', price: 30 }, 
+                    { id: 'ex_dal', name: 'Extra Dal', price: 20 }
+                ] 
+            },
+            { 
+                id: 'fish_bhat', 
+                name: 'Fish Bhat', 
+                portion: '1 Plet', 
+                price: 120, 
+                category: 'thali', 
+                img: 'fbhat.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=200', 
+                extras: [
+                    { id: 'ex_fish', name: 'Extra Fish Piece (1 Pc)', price: 40 }, 
+                    { id: 'ex_rice', name: 'Extra Rice', price: 30 }
+                ] 
+            },
+            { 
+                id: 'chicken_bhat', 
+                name: 'Chicken Bhat', 
+                portion: '1 Plet', 
+                price: 140, 
+                category: 'thali', 
+                img: 'cbhat.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=200', 
+                extras: [
+                    { id: 'ex_chicken_pc', name: 'Extra Chicken Piece (1 Pc)', price: 35 }, 
+                    { id: 'ex_rice', name: 'Extra Rice', price: 30 }
+                ] 
+            },
+            { 
+                id: 'chicken_curry', 
+                name: 'Chicken Curry', 
+                portion: '1 Plet (6 Pcs)', 
+                price: 100, 
+                category: 'thali', 
+                img: 'curry.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=200', 
+                extras: [
+                    { id: 'ex_chicken_pc', name: 'Extra Chicken Piece', price: 35 }
+                ] 
+            },
+            { 
+                id: 'biryani_special', 
+                name: 'Biryani Special', 
+                portion: '1 Plet', 
+                price: 140, 
+                category: 'biryani', 
+                img: 'i.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200',
+                variants: [
+                    { id: 'chicken_biryani', name: 'Chicken Biryani', price: 140 },
+                    { id: 'veg_biryani', name: 'Veg Biryani', price: 110 }
+                ],
+                extras: [
+                    { id: 'ex_bir_alu', name: 'Extra Biryani Alu', price: 15 },
+                    { id: 'ex_bir_chx', name: 'Extra Chicken Piece', price: 45 },
+                    { id: 'ex_egg', name: 'Add Boil Egg', price: 15 }
+                ] 
+            },
+            { 
+                id: 'vej_momo', 
+                name: 'Vej Momo', 
+                portion: '1 Plet', 
+                price: 50, 
+                category: 'snacks', 
+                img: 'mo.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1625220194771-7640b76e556d?w=200', 
+                extras: [
+                    { id: 'ex_soup', name: 'Extra Soup', price: 10 }, 
+                    { id: 'ex_chutney', name: 'Extra Spicy Chutney', price: 10 }
+                ] 
+            },
+            { 
+                id: 'chicken_momo', 
+                name: 'Chicken Momo', 
+                portion: '1 Plet', 
+                price: 80, 
+                category: 'snacks', 
+                img: 'o.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1625220194771-7640b76e556d?w=200', 
+                extras: [
+                    { id: 'ex_soup', name: 'Extra Soup', price: 10 }
+                ] 
+            },
+            { 
+                id: 'chicken_lolipop', 
+                name: 'Chicken Lolipop', 
+                portion: '1 Pic', 
+                price: 30, 
+                category: 'snacks', 
+                img: 'pop.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200' 
+            },
+            { 
+                id: 'egg_chawmin', 
+                name: 'Egg Chawmin', 
+                portion: '1 Plet', 
+                price: 50, 
+                category: 'chowmein', 
+                img: 'en.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97ea8?w=200' 
+            },
+            { 
+                id: 'veg_chawmin', 
+                name: 'Veg Chawmin', 
+                portion: '1 Plet', 
+                price: 40, 
+                category: 'chowmein', 
+                img: 'ooo.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97ea8?w=200' 
+            },
+            { 
+                id: 'egg_roll', 
+                name: 'Egg Roll', 
+                portion: '1 Pic', 
+                price: 40, 
+                category: 'chowmein', 
+                img: 'egg.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1628294828558-8d262a4d38e2?w=200', 
+                extras: [
+                    { id: 'ex_cheese', name: 'Add Extra Cheese', price: 15 }, 
+                    { id: 'ex_sauce', name: 'Extra Sauce', price: 5 }
+                ] 
+            },
+            { 
+                id: 'chicken_roll', 
+                name: 'Chicken Roll', 
+                portion: '1 Pic', 
+                price: 80, 
+                category: 'chowmein', 
+                img: 'c.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1628294828558-8d262a4d38e2?w=200' 
+            },
+            { 
+                id: 'water_bottle', 
+                name: 'Water Bottle', 
+                portion: '1 Liter', 
+                price: 20, 
+                category: 'drinks', 
+                img: 'water.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=200' 
+            },
+            { 
+                id: 'campa', 
+                name: 'Campa', 
+                portion: '1 Pc', 
+                price: 35, 
+                category: 'drinks', 
+                img: 'campa.jpg', 
+                fallback: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=200' 
+            }
+        ];
+
+        let cart = JSON.parse(localStorage.getItem('cartData')) || {};
+        let isOtpSent = false;
+        let activeCustomizingItem = null;
+        let extraQuantities = {};
+
+        function renderMenuItems(itemsToRender = menuItems) {
+            const container = document.getElementById('food-container');
+            container.innerHTML = '';
+
+            itemsToRender.forEach(item => {
+                container.innerHTML += `
+                    <div class="bg-white p-3.5 rounded-2xl border border-rose-200/70 shadow-sm flex gap-3.5 items-center hover:shadow-md transition">
+                        <img src="${item.img}" class="w-20 h-20 rounded-xl object-cover flex-shrink-0 bg-gray-50 border border-gray-200" onerror="this.src='${item.fallback}'">
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-extrabold text-gray-900 text-sm truncate">${item.name} <span class="text-xs font-normal text-gray-500">(${item.portion})</span></h3>
+                            <p class="text-rose-600 font-black text-sm mt-0.5">₹${item.price.toFixed(2)}</p>
+                            <div id="controls-${item.id}" class="mt-2">
+                                <button onclick="openCustomizationModal('${item.id}')" class="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs px-4 py-1.5 rounded-xl shadow-xs transition flex items-center gap-1">
+                                    <i class="fa-solid fa-plus text-[10px]"></i> Add Item
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            itemsToRender.forEach(item => {
+                updateQuantityControls(item.id, item.name, item.price);
+            });
+        }
+
+        function updateQuantityControls(id, name, price) {
+            const container = document.getElementById(`controls-${id}`);
+            if (!container) return;
+
+            const item = menuItems.find(i => i.id === id);
+            const hasOptions = item && ((item.variants && item.variants.length > 0) || (item.extras && item.extras.length > 0));
+
+            if (cart[id] && cart[id].qty > 0) {
+                container.innerHTML = `
+                    <div class="flex items-center border border-rose-300 rounded-xl overflow-hidden bg-rose-50/80 w-max shadow-inner">
+                        <button onclick="updateQty('${id}', -1)" class="w-7 h-7 bg-rose-600 text-white font-black text-xs flex items-center justify-center hover:bg-rose-700 transition">-</button>
+                        <span class="px-3 text-xs font-black text-rose-800">${cart[id].qty}</span>
+                        <button onclick="updateQty('${id}', 1)" class="w-7 h-7 bg-rose-600 text-white font-black text-xs flex items-center justify-center hover:bg-rose-700 transition">+</button>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <button onclick="openCustomizationModal('${item.id}')" class="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs px-4 py-1.5 rounded-xl shadow-xs transition flex items-center gap-1">
+                        <i class="fa-solid fa-plus text-[10px]"></i> Add Item
+                    </button>
+                `;
+            }
+        }
+
+        function openCustomizationModal(id) {
+            const item = menuItems.find(i => i.id === id);
+            if (!item) return;
+
+            activeCustomizingItem = item;
+            extraQuantities = {};
+            
+            const hasOptions = (item.variants && item.variants.length > 0) || (item.extras && item.extras.length > 0);
+
+            if (!hasOptions) {
+                addToCart(item.id, item.name, item.price);
+                return;
+            }
+
+            document.getElementById('modalItemTitle').innerText = item.name;
+            document.getElementById('modalItemSub').innerText = `Portion: ${item.portion}`;
+            
+            const body = document.getElementById('modalOptionsBody');
+            body.innerHTML = '';
+
+            if (item.variants && item.variants.length > 0) {
+                let variantHTML = `<div class="space-y-2"><p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Choose Option</p><div class="space-y-2">`;
+                item.variants.forEach((v, index) => {
+                    variantHTML += `
+                        <label class="flex items-center justify-between p-3 border rounded-2xl border-gray-200 cursor-pointer hover:border-rose-400 transition bg-gray-50/80">
+                            <div class="flex items-center gap-2.5">
+                                <input type="radio" name="modalVariant" value="${v.id}" data-price="${v.price}" data-name="${v.name}" ${index === 0 ? 'checked' : ''} onchange="calculateModalPrice()" class="accent-rose-600 w-4 h-4">
+                                <span class="text-xs font-bold text-gray-900">${v.name}</span>
+                            </div>
+                            <span class="text-xs font-black text-rose-600">₹${v.price}</span>
+                        </label>
+                    `;
+                });
+                variantHTML += `</div></div>`;
+                body.innerHTML += variantHTML;
+            }
+
+            if (item.extras && item.extras.length > 0) {
+                let extrasHTML = `<div class="space-y-2 mt-3"><p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Add Extra Toppings</p><div class="space-y-2">`;
+                item.extras.forEach(ex => {
+                    extraQuantities[ex.id] = 0;
+                    extrasHTML += `
+                        <div class="flex items-center justify-between p-3 border rounded-2xl border-gray-200 bg-gray-50/80">
+                            <div>
+                                <span class="text-xs font-bold text-gray-900 block">${ex.name}</span>
+                                <span class="text-[10px] font-bold text-rose-600">+₹${ex.price} each</span>
+                            </div>
+                            <div class="flex items-center border border-gray-300 rounded-xl overflow-hidden bg-white">
+                                <button onclick="changeExtraQty('${ex.id}', -1)" class="w-7 h-7 bg-gray-100 text-gray-700 font-bold text-xs hover:bg-gray-200">-</button>
+                                <span id="extra-qty-${ex.id}" class="px-2.5 text-xs font-black text-gray-900">0</span>
+                                <button onclick="changeExtraQty('${ex.id}', 1)" class="w-7 h-7 bg-gray-100 text-gray-700 font-bold text-xs hover:bg-gray-200">+</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                extrasHTML += `</div></div>`;
+                body.innerHTML += extrasHTML;
+            }
+
+            document.getElementById('modalAddBtn').onclick = () => submitCustomization();
+            calculateModalPrice();
+            document.getElementById('customizationModal').classList.remove('hidden');
+        }
+
+        function changeExtraQty(extraId, delta) {
+            if (!extraQuantities[extraId]) extraQuantities[extraId] = 0;
+            extraQuantities[extraId] = Math.max(0, extraQuantities[extraId] + delta);
+            document.getElementById(`extra-qty-${extraId}`).innerText = extraQuantities[extraId];
+            calculateModalPrice();
+        }
+
+        function calculateModalPrice() {
+            let total = 0;
+            const selectedVariant = document.querySelector('input[name="modalVariant"]:checked');
+            if (selectedVariant) {
+                total += parseFloat(selectedVariant.getAttribute('data-price'));
+            } else if (activeCustomizingItem) {
+                total += activeCustomizingItem.price;
+            }
+
+            if (activeCustomizingItem && activeCustomizingItem.extras) {
+                activeCustomizingItem.extras.forEach(ex => {
+                    const qty = extraQuantities[ex.id] || 0;
+                    total += qty * ex.price;
+                });
+            }
+
+            document.getElementById('modalTotalPrice').innerText = `₹${total.toFixed(2)}`;
+        }
+
+        function submitCustomization() {
+            let selectedName = activeCustomizingItem.name;
+            let basePrice = activeCustomizingItem.price;
+            let cartKey = activeCustomizingItem.id;
+            let extraLabels = [];
+            let extrasTotal = 0;
+
+            const selectedVariant = document.querySelector('input[name="modalVariant"]:checked');
+            if (selectedVariant) {
+                selectedName = selectedVariant.getAttribute('data-name');
+                basePrice = parseFloat(selectedVariant.getAttribute('data-price'));
+                cartKey = selectedVariant.value;
+            }
+
+            if (activeCustomizingItem.extras) {
+                activeCustomizingItem.extras.forEach(ex => {
+                    const qty = extraQuantities[ex.id] || 0;
+                    if (qty > 0) {
+                        extrasTotal += qty * ex.price;
+                        extraLabels.push(`${ex.name} x${qty}`);
+                    }
+                });
+            }
+
+            const finalPrice = basePrice + extrasTotal;
+            if (extraLabels.length > 0) {
+                selectedName += ` (${extraLabels.join(', ')})`;
+                cartKey += '_' + Date.now();
+            }
+
+            addToCart(cartKey, selectedName, finalPrice);
+            closeCustomizationModal();
+        }
+
+        function closeCustomizationModal() {
+            document.getElementById('customizationModal').classList.add('hidden');
+        }
+
+        function addToCart(id, name, price) {
+            if (cart[id]) {
+                cart[id].qty += 1;
+            } else {
+                cart[id] = { name, price, qty: 1 };
+            }
+            saveCart();
+            updateCartUI();
+            const originalItem = menuItems.find(i => i.id === id);
+            updateQuantityControls(id, cart[id]?.name || originalItem?.name, cart[id]?.price || originalItem?.price);
+        }
+
+        function updateQty(id, delta) {
+            if (cart[id]) {
+                cart[id].qty += delta;
+                if (cart[id].qty <= 0) {
+                    delete cart[id];
+                }
+                saveCart();
+                updateCartUI();
+                const originalItem = menuItems.find(i => i.id === id);
+                updateQuantityControls(id, cart[id]?.name || originalItem?.name, cart[id]?.price || originalItem?.price);
+            }
+        }
+
+        function saveCart() {
+            localStorage.setItem('cartData', JSON.stringify(cart));
+        }
+
+        function updateCartUI() {
+            let total = 0;
+            let count = 0;
+            for (const id in cart) {
+                total += cart[id].price * cart[id].qty;
+                count += cart[id].qty;
+            }
+            const summaryBar = document.getElementById('cartSummary');
+            const headerCount = document.getElementById('headerCartCount');
+            headerCount.innerText = count;
+            
+            if (count > 0) {
+                summaryBar.classList.remove('hidden');
+                document.getElementById('cartCount').innerText = count;
+                document.getElementById('cartTotal').innerText = `₹${total.toFixed(2)}`;
+            } else {
+                summaryBar.classList.add('hidden');
+            }
+        }
+
+        function filterCategory(cat) {
+            const filtered = menuItems.filter(item => item.category === cat);
+            renderMenuItems(filtered);
+        }
+
+        function resetFilter() {
+            renderMenuItems(menuItems);
+            document.getElementById('searchInput').value = '';
+        }
+
+        function filterFoodItems() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const filtered = menuItems.filter(item => item.name.toLowerCase().includes(query));
+            renderMenuItems(filtered);
+        }
+
+        function openAuthModal() {
+            document.getElementById('authModal').classList.remove('hidden');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
+        }
+
+        function handleGoogleSignIn() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+                .then(result => {
+                    alert(`Welcome ${result.user.displayName}! Signed in successfully.`);
+                    closeAuthModal();
+                })
+                .catch(err => {
+                    alert("Google Sign-In failed: " + err.message);
+                });
+        }
+
+        function handlePhoneAuthStep() {
+            if (!isOtpSent) {
+                let phone = document.getElementById('phoneNumber').value.trim();
+                if (phone.length < 10) {
+                    alert("Please enter a valid 10-digit phone number.");
+                    return;
+                }
+                alert("OTP sent to " + phone);
+                isOtpSent = true;
+                document.getElementById('otpSection').classList.remove('hidden');
+                document.getElementById('authActionBtn').innerText = "Verify & Sign In";
+            } else {
+                let otp = document.getElementById('otpInput').value.trim();
+                if (otp.length === 6) {
+                    alert("Phone authentication successful!");
+                    closeAuthModal();
+                } else {
+                    alert("Please enter the 6-digit OTP.");
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMenuItems(menuItems);
+            updateCartUI();
+        });
+    </script>
+</body>
+</html>

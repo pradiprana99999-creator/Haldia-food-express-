@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Status - Haldia Food Express</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-blue-50/50 min-h-screen pb-12 font-sans text-slate-800">
+
+    <div class="max-w-md mx-auto pt-4 px-4">
+      <!-- Header -->
+      <div class="flex items-center justify-between py-3 mb-4 bg-white px-5 rounded-3xl shadow-sm border border-blue-100">
+        <button onclick="history.back()='index.html'" class="w-10 h-10 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition shadow-xs">
+          <i class="fa-solid fa-arrow-left text-sm"></i>
+        </button>
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Order Status</span>
+        <a href="tel:7548968062" class="w-10 h-10 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition shadow-xs">
+          <i class="fa-solid fa-headset text-sm"></i>
+        </a>
+      </div>
+
+      <!-- Status Banner -->
+      <div id="statusBannerCard" class="bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 rounded-3xl p-6 text-center text-white shadow-lg shadow-blue-200 mb-6 relative overflow-hidden hidden">
+        <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full pointer-events-none blur-xl"></div>
+        <div id="iconContainer" class="w-16 h-16 rounded-full bg-white text-blue-600 flex items-center justify-center mx-auto mb-4 text-2xl shadow-md">
+           <i class="fa-solid fa-clock"></i>
+        </div>
+        <span id="bannerSubBadge" class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-extrabold uppercase tracking-widest mb-2 inline-block">Action Required</span>
+        <h3 id="statusTitleText" class="text-2xl font-black mb-1 tracking-tight">Payment Pending</h3>
+        <p id="statusSubText" class="text-xs font-medium text-blue-100">Complete payment to process your order.</p>
+      </div>
+
+      <!-- Order ID & Badge -->
+      <div class="bg-white rounded-3xl p-5 mb-4 border border-blue-100 shadow-sm flex items-center justify-between">
+        <div>
+            <span class="text-xs font-extrabold uppercase tracking-wider text-slate-400 block mb-0.5">Order ID</span>
+            <span id="displayOrderId" class="font-black text-blue-950 text-base font-monotyping tracking-tight">Loading...</span>
+        </div>
+        <span id="statusBadge" class="px-3 py-1.5 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1.5 shadow-2xs">
+            <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span> Processing
+        </span>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="bg-white rounded-3xl p-6 mb-4 border border-blue-100 shadow-sm space-y-4">
+        <span class="text-blue-400 block font-extrabold uppercase text-[10px] tracking-wider mb-3">Order Summary</span>
+        
+        <div id="orderItemsSummaryList" class="space-y-3">
+            <!-- Rendered by JS -->
+        </div>
+
+        <div class="flex justify-between items-center pt-4 border-t border-blue-50 text-base">
+          <span class="font-black text-slate-600">Total Amount</span>
+          <span id="displayTotalAmount" class="font-black text-blue-600 text-xl tracking-tight">₹0.00</span>
+        </div>
+      </div>
+
+      <!-- Delivery Info -->
+      <div class="bg-white rounded-3xl p-6 mb-6 border border-blue-100 shadow-sm space-y-4">
+        <div>
+            <span class="text-blue-400 block font-extrabold uppercase text-[10px] tracking-wider mb-1">Delivery Address</span>
+            <p id="displayAddress" class="font-bold text-blue-950 text-sm">Loading...</p>
+        </div>
+      </div>
+
+      <!-- Payment Section (Hidden if Cash on Delivery) -->
+      <div id="paymentSectionCard" class="bg-white rounded-3xl p-6 mb-6 border border-blue-200 shadow-md shadow-blue-100 relative overflow-hidden">
+        <div class="absolute inset-0 h-1 bg-gradient-to-r from-blue-400 via-indigo-500 to-sky-500"></div>
+
+        <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-wider mb-3 inline-block">Payment Gateway</span>
+        <h3 class="text-lg font-black text-blue-950 mb-1">Complete Your Payment</h3>
+        <p class="text-xs font-medium text-slate-500 mb-6">Pay directly via UPI app or scan QR code</p>
+
+        <!-- Fixed Pay Now Button using JavaScript Handler -->
+        <button id="dynamicPayButton" onclick="triggerUPIPayment()" class="w-full py-4 mb-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm rounded-2xl shadow-lg shadow-blue-200 transition flex items-center justify-center gap-2 cursor-pointer">
+           <i class="fa-solid fa-bolt text-amber-300"></i> Pay Now (<span id="payButtonAmount">₹XXX</span>)
+        </button>
+
+        <div class="border-t border-blue-50 pt-6 mb-6">
+            <span class="text-xs font-bold text-blue-400 uppercase tracking-wider block mb-3">Or Scan UPI QR Code</span>
+            <div class="inline-block p-5 bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-100 mb-4">
+                <img id="qrCodeImg" src="QR_code .jpg" alt="UPI QR Code" class="w-56 h-56 object-contain mx-auto rounded-2xl">
+            </div>
+            <div class="flex items-center justify-center gap-2 text-slate-700 font-bold text-xs">
+                <i class="fa-brands fa-google-pay text-base text-blue-500"></i>
+                <i class="fa-brands fa-amazon-pay text-base text-orange-500"></i>
+                <i class="fa-solid fa-p text-sm bg-purple-600 text-white w-5 h-5 rounded-full flex items-center justify-center"></i>
+                <span>Accepted Here</span>
+            </div>
+        </div>
+
+        <!-- Verify Payment via Screenshot -->
+        <div class="bg-blue-50/70 rounded-2xl p-4 flex items-start gap-3 border border-blue-100">
+            <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+                <i class="fa-solid fa-camera text-sm"></i>
+            </div>
+            <div>
+                <h5 class="text-xs font-black text-blue-950">Verify Payment via Screenshot</h5>
+                <p class="text-[11px] text-slate-500 font-medium mt-0.5 leading-relaxed">After completing the transfer, select your payment confirmation screenshot to attach it for instant verification.</p>
+            </div>
+        </div>
+
+        <input type="file" id="screenshotInput" accept="image/*" class="hidden" onchange="handleFileSelected(this)">
+        <button onclick="document.getElementById('screenshotInput').click()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer mt-4">
+            <i class="fa-solid fa-image text-sm"></i> Select Payment Screenshot
+        </button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="space-y-3">
+        <button onclick="cancelCurrentOrder()" class="w-full py-4 bg-white border-2 border-blue-100 text-blue-600 font-black text-xs rounded-2xl shadow-sm hover:bg-blue-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-ban text-sm"></i> Cancel Order
+        </button>
+        <button onclick="window.location.href='index2.html'" class="w-full py-4 bg-gradient-to-r from-blue-700 to-indigo-700 text-white font-black text-xs rounded-2xl shadow-lg shadow-blue-200 hover:from-blue-800 hover:to-indigo-800 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-house text-sm"></i> Back to Home
+        </button>
+      </div>
+
+    </div>
+
+    <script>
+      let currentOrderData = null;
+      let cachedUpiUrl = "";
+
+      window.onload = function() {
+        const savedOrder = localStorage.getItem('lastPlacedOrder');
+        if (savedOrder) {
+            try {
+                currentOrderData = JSON.parse(savedOrder);
+                renderOrderDetails();
+            } catch (e) {
+                console.error("Failed to parse order data", e);
+            }
+        } else {
+            console.warn("No order data found in localStorage");
+        }
+      };
+
+      function renderOrderDetails() {
+        if (!currentOrderData) return;
+
+        document.getElementById('displayOrderId').innerText = currentOrderData.orderId;
+        document.getElementById('displayTotalAmount').innerText = '₹' + currentOrderData.totalAmount.toFixed(2);
+        document.getElementById('displayAddress').innerText = currentOrderData.address;
+
+        const itemsList = document.getElementById('orderItemsSummaryList');
+        itemsList.innerHTML = '';
+        currentOrderData.items.forEach(item => {
+            itemsList.innerHTML += `
+                <div class="flex justify-between text-xs font-bold text-slate-800">
+                    <span>${item.qty}x ${item.name}</span>
+                    <span>₹${(item.price * item.qty).toFixed(2)}</span>
+                </div>
+            `;
+        });
+
+        const statusBanner = document.getElementById('statusBannerCard');
+        const iconContainer = document.getElementById('iconContainer');
+        const bannerSubBadge = document.getElementById('bannerSubBadge');
+        const statusTitleText = document.getElementById('statusTitleText');
+        const statusSubText = document.getElementById('statusSubText');
+        const statusBadge = document.getElementById('statusBadge');
+        const paymentSection = document.getElementById('paymentSectionCard');
+
+        // Ensure banner is visible
+        statusBanner.classList.remove('hidden');
+
+        if (currentOrderData.paymentMethod.toUpperCase() === 'COD') {
+            // Cash on Delivery Styling
+            statusBanner.className = "bg-gradient-to-r from-emerald-600 via-teal-600 to-green-600 rounded-3xl p-6 text-center text-white shadow-lg shadow-emerald-200 mb-6 relative overflow-hidden";
+            iconContainer.className = "w-16 h-16 rounded-full bg-white text-emerald-600 flex items-center justify-center mx-auto mb-4 text-2xl shadow-md";
+            iconContainer.innerHTML = '<i class="fa-solid fa-truck-fast"></i>';
+            bannerSubBadge.innerText = "Cash On Delivery";
+            statusTitleText.innerText = "Order Placed!";
+            statusSubText.innerText = "Please keep exact cash ready for delivery executive.";
+            
+            statusBadge.className = "px-3 py-1.5 rounded-full text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5 shadow-2xs";
+            statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Confirmed';
+
+            paymentSection.style.display = 'none';
+        } else {
+            // UPI Payment Styling
+            statusBanner.className = "bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 rounded-3xl p-6 text-center text-white shadow-lg shadow-amber-200 mb-6 relative overflow-hidden";
+            iconContainer.className = "w-16 h-16 rounded-full bg-white text-amber-600 flex items-center justify-center mx-auto mb-4 text-2xl shadow-md";
+            iconContainer.innerHTML = '<i class="fa-solid fa-clock"></i>';
+            bannerSubBadge.innerText = "Action Required";
+            statusTitleText.innerText = "Payment Pending";
+            statusSubText.innerText = "Complete payment to process your order.";
+
+            statusBadge.className = "px-3 py-1.5 rounded-full text-xs font-black bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1.5 shadow-2xs";
+            statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Payment Pending';
+
+            paymentSection.style.display = 'block';
+            
+            const cleanAmount = currentOrderData.totalAmount.toFixed(2);
+            document.getElementById('payButtonAmount').innerText = '₹' + cleanAmount;
+            
+            cachedUpiUrl = `upi://pay?pa=7548968062@pthdfc&pn=HaldiaFoodExpress&am=${cleanAmount}&cu=INR&tn=Payment_for_Order_${currentOrderData.orderId}`;
+        }
+      }
+
+      function triggerUPIPayment() {
+        if (cachedUpiUrl) {
+            try {
+                window.location.href = cachedUpiUrl;
+            } catch (e) {
+                alert("Could not open UPI app automatically. Please scan the QR code below.");
+            }
+        }
+      }
+
+      function handleFileSelected(input) {
+        if (input.files && input.files[0]) {
+            const fileName = input.files[0].name;
+            alert("Payment screenshot '" + fileName + "' attached successfully! Order processing initiated.");
+            
+            // Update UI to confirmed state upon screenshot upload
+            const banner = document.getElementById('statusBannerCard');
+            banner.className = "bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 rounded-3xl p-6 text-center text-white shadow-lg shadow-blue-200 mb-6 relative overflow-hidden";
+            
+            const iconContainer = document.querySelector('#statusBannerCard .w-16.h-16');
+            if (iconContainer) {
+                iconContainer.className = 'w-16 h-16 rounded-full bg-white text-blue-600 flex items-center justify-center mx-auto mb-4 text-2xl shadow-md';
+                iconContainer.innerHTML = '<i class="fa-solid fa-check"></i>';
+            }
+            
+            document.getElementById('bannerSubBadge').innerText = 'Verified';
+            document.getElementById('statusTitleText').innerText = 'Order Confirmed!';
+            document.getElementById('statusSubText').innerText = 'Payment screenshot received. Preparing your delicious food!';
+            
+            const badge = document.getElementById('statusBadge');
+            badge.className = 'px-3 py-1.5 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1.5 shadow-2xs';
+            badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-blue-500"></span> Confirmed';
+            
+            document.getElementById('paymentSectionCard').style.display = 'none';
+        }
+      }
+
+      function cancelCurrentOrder() {
+        if (confirm('Are you sure you want to cancel this order?')) {
+            const banner = document.getElementById('statusBannerCard');
+            banner.className = 'bg-gradient-to-r from-slate-700 to-blue-900 rounded-3xl p-6 text-center text-white shadow-lg shadow-blue-200 mb-6 relative overflow-hidden';
+            
+            const iconContainer = document.querySelector('#statusBannerCard .w-16.h-16');
+            if (iconContainer) {
+                iconContainer.className = 'w-16 h-16 rounded-full bg-white text-slate-800 flex items-center justify-center mx-auto mb-4 text-2xl shadow-md';
+                iconContainer.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+            }
+            
+            document.getElementById('bannerSubBadge').innerText = 'Terminated';
+            document.getElementById('statusTitleText').innerText = 'Order Cancelled';
+            document.getElementById('statusSubText').innerText = 'This order has been cancelled by customer.';
+            
+            const badge = document.getElementById('statusBadge');
+            badge.className = 'px-3 py-1.5 rounded-full text-xs font-black bg-slate-50 text-slate-700 border border-slate-200 flex items-center gap-1.5 shadow-2xs';
+            badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-500"></span> Cancelled';
+            
+            document.getElementById('paymentSectionCard').style.display = 'none';
+        }
+      }
+    </script>
+</body>
+</html>

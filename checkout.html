@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Haldia Food Express</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 min-h-screen pb-12 font-sans text-slate-800">
+
+    <div class="max-w-md mx-auto pt-4 px-4">
+      <!-- Header -->
+      <div class="flex items-center justify-between py-3 mb-4 bg-white px-5 rounded-3xl shadow-sm border border-slate-200/60">
+        <button onclick="history.back()='index.html'" class="w-10 h-10 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition shadow-xs">
+          <i class="fa-solid fa-arrow-left text-sm"></i>
+        </button>
+        <h2 class="text-base font-black text-slate-900 tracking-tight">Checkout</h2>
+        <div class="w-10"></div> <!-- Spacer for centering -->
+      </div>
+
+      <!-- Review Order Section -->
+      <div class="bg-white rounded-3xl p-6 mb-4 border border-slate-200/60 shadow-sm space-y-4">
+        <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-2">Review Order</h3>
+        
+        <div id="checkoutItemsList" class="divide-y divide-slate-100 max-h-60 overflow-y-auto">
+            <!-- Rendered by JS -->
+        </div>
+
+        <div id="emptyCartMsg" class="text-center py-6 hidden">
+            <i class="fa-solid fa-basket-shopping text-3xl text-slate-300 mb-2 block"></i>
+            <p class="text-xs font-bold text-slate-700">Your cart is empty.</p>
+            <button onclick="window.location.href='index.html'" class="mt-3 text-xs font-black text-rose-600 hover:underline">Add items from menu &rarr;</button>
+        </div>
+
+        <div class="flex justify-between items-center pt-3 border-t border-slate-100 text-base">
+          <span class="font-black text-slate-600">Total Amount</span>
+          <span id="checkoutTotalAmount" class="font-black text-rose-600 text-xl tracking-tight">₹0.00</span>
+        </div>
+      </div>
+
+      <!-- Checkout Form -->
+      <form id="checkoutForm" onsubmit="processOrder(event)" class="bg-white rounded-3xl p-6 mb-6 border border-slate-200/60 shadow-sm space-y-4">
+        <div>
+            <label class="block text-xs font-black text-slate-700 mb-1.5" for="paymentMethod">Payment Method</label>
+            <select id="paymentMethod" required class="w-full border border-slate-200 rounded-2xl p-3.5 text-xs bg-slate-50 font-bold focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none transition">
+                <option value="COD">Cash on Delivery</option>
+                <option value="UPI">UPI / Online Payment</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-xs font-black text-slate-700 mb-1.5" for="deliveryAddress">Delivery Address</label>
+            <textarea id="deliveryAddress" required rows="2" placeholder="Enter your delivery address" class="w-full border border-slate-200 rounded-2xl p-3.5 text-xs bg-slate-50 font-medium focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none transition resize-none"></textarea>
+        </div>
+
+        <div>
+            <label class="block text-xs font-black text-slate-700 mb-1.5" for="phoneNumber">Phone Number</label>
+            <input type="tel" id="phoneNumber" required pattern="[0-9]{10}" placeholder="10-digit mobile number" class="w-full border border-slate-200 rounded-2xl p-3.5 text-xs bg-slate-50 font-medium focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none transition">
+        </div>
+
+        <button type="submit" id="placeOrderBtn" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-sm rounded-2xl shadow-lg shadow-emerald-200 transition flex items-center justify-center gap-2 cursor-pointer mt-2">
+            <i class="fa-solid fa-lock text-xs"></i> Place Order
+        </button>
+      </form>
+    </div>
+
+    <script>
+      let cart = {};
+      let menuItemsMap = {};
+
+      // Master menu items database for price reference
+      const menuItems = [
+        { id: 'puri_sabzi', name: 'Puri Sabzi', price: 50, category: 'snacks' },
+        { id: 'roti', name: 'Roti (1 Pic)', price: 7, category: 'roti' },
+        { id: 'roti_sabzi', name: 'Roti Sabzi', price: 80, category: 'roti' },
+        { id: 'roti_tadka', name: 'Roti Tadka', price: 100, category: 'roti' },
+        { id: 'fish_bhat', name: 'Fish Bhat', price: 120, category: 'thali' },
+        { id: 'chicken_bhat', name: 'Chicken Bhat', price: 140, category: 'thali' },
+        { id: 'chicken_curry', name: 'Chicken Curry', price: 100, category: 'biryani' },
+        { id: 'fish', name: 'Fish (1 Pic)', price: 40, category: 'snacks' },
+        { id: 'biryani_special', name: 'Biryani Special', price: 140, category: 'biryani' },
+        { id: 'vej_momo', name: 'Vej Momo', price: 50, category: 'snacks' },
+        { id: 'chicken_momo', name: 'Chicken Momo', price: 80, category: 'snacks' },
+        { id: 'chicken_lollipop', name: 'Chicken Lollipop', price: 30, category: 'snacks' },
+        { id: 'veg_chawmin', name: 'Veg Chawmin', price: 40, category: 'chowmein' },
+        { id: 'egg_roll', name: 'Egg Roll', price: 40, category: 'snacks' },
+        { id: 'chicken_roll', name: 'Chicken Roll', price: 80, category: 'snacks' },
+        { id: 'water_bottle', name: 'Water Bottle', price: 20, category: 'drinks' },
+        { id: 'campa', name: 'Campa', price: 35, category: 'drinks' },
+        { id: 'hello', name: 'Hello', price: 65, category: 'drinks' }
+      ];
+
+      window.onload = function() {
+        menuItems.forEach(item => {
+            menuItemsMap[item.id] = item;
+        });
+
+        // Load cart and form data
+        const savedCart = localStorage.getItem('cartData');
+        if (savedCart) {
+            try {
+                cart = JSON.parse(savedCart);
+            } catch (e) {
+                cart = {};
+            }
+        }
+
+        const savedAddress = localStorage.getItem('deliveryAddress');
+        if (savedAddress) document.getElementById('deliveryAddress').value = savedAddress;
+
+        const savedPhone = localStorage.getItem('deliveryPhone');
+        if (savedPhone) document.getElementById('phoneNumber').value = savedPhone;
+
+        const savedPayment = localStorage.getItem('paymentMethod');
+        if (savedPayment) document.getElementById('paymentMethod').value = savedPayment;
+
+        renderCheckoutList();
+      };
+
+      // Save form inputs on change
+      document.getElementById('deliveryAddress').addEventListener('input', function() {
+        localStorage.setItem('deliveryAddress', this.value);
+      });
+      document.getElementById('phoneNumber').addEventListener('input', function() {
+        localStorage.setItem('deliveryPhone', this.value);
+      });
+      document.getElementById('paymentMethod').addEventListener('change', function() {
+        localStorage.setItem('paymentMethod', this.value);
+      });
+
+      function renderCheckoutList() {
+        const listContainer = document.getElementById('checkoutItemsList');
+        const emptyMsg = document.getElementById('emptyCartMsg');
+        listContainer.innerHTML = '';
+        
+        let total = 0;
+        let count = 0;
+
+        for (const id in cart) {
+            if (cart[id].qty > 0) {
+                count += cart[id].qty;
+                const itemTotal = cart[id].price * cart[id].qty;
+                total += itemTotal;
+
+                listContainer.innerHTML += `
+                    <div class="py-3 flex justify-between items-center text-xs">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-slate-900">${cart[id].name}</h4>
+                            <span class="text-[11px] text-slate-400 font-medium">₹${cart[id].price} x ${cart[id].qty}</span>
+                        </div>
+                        <div class="text-right flex items-center gap-4">
+                            <span class="font-black text-slate-900">₹${itemTotal.toFixed(2)}</span>
+                            <button onclick="removeItem('${id}')" class="text-rose-400 hover:text-rose-600 transition p-1">
+                                <i class="fa-solid fa-trash-can text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        document.getElementById('checkoutTotalAmount').innerText = '₹' + total.toFixed(2);
+
+        if (count === 0) {
+            listContainer.classList.add('hidden');
+            emptyMsg.classList.remove('hidden');
+            document.getElementById('placeOrderBtn').disabled = true;
+            document.getElementById('placeOrderBtn').className = 'w-full py-4 bg-slate-200 text-slate-400 font-black text-sm rounded-2xl cursor-not-allowed mt-2 flex items-center justify-center gap-2';
+        } else {
+            listContainer.classList.remove('hidden');
+            emptyMsg.classList.add('hidden');
+            document.getElementById('placeOrderBtn').disabled = false;
+            document.getElementById('placeOrderBtn').className = 'w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-sm rounded-2xl shadow-lg shadow-emerald-200 transition flex items-center justify-center gap-2 cursor-pointer mt-2';
+        }
+      }
+
+      function removeItem(id) {
+        if (cart[id]) {
+            delete cart[id];
+            localStorage.setItem('cartData', JSON.stringify(cart));
+            renderCheckoutList();
+        }
+      }
+
+      function processOrder(event) {
+        event.preventDefault();
+        
+        let total = 0;
+        let itemsArray = [];
+        for (const id in cart) {
+            if (cart[id].qty > 0) {
+                itemsArray.push(cart[id]);
+                total += cart[id].price * cart[id].qty;
+            }
+        }
+
+        const orderData = {
+            orderId: 'HFE-' + Math.floor(10000 + Math.random() * 90000),
+            items: itemsArray,
+            totalAmount: total,
+            address: document.getElementById('deliveryAddress').value,
+            phone: document.getElementById('phoneNumber').value,
+            paymentMethod: document.getElementById('paymentMethod').value,
+            status: 'Placed',
+            timestamp: new Date().getTime()
+        };
+
+        localStorage.setItem('lastPlacedOrder', JSON.stringify(orderData));
+        
+        // Pass payment mode in URL for instant UI rendering on confirmation page
+        const redirectUrl = `order-confirmation.html?mode=${orderData.paymentMethod.toLowerCase()}`;
+        window.location.href = redirectUrl;
+      }
+    </script>
+</body>
+</html>
