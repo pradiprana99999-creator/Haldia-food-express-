@@ -7,18 +7,28 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-    <style> ​@keyframes pulse-slow {
-0%, 100% { transform: scale(1); opacity: 1; }
-50% { transform: scale(1.05); opacity: 0.9; }
-}.
-.animate-pulse-slow {
-  animation: pulse-slow 2s infinite ease-in-out;
-}
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDLjAPGx9s1iiY9EGSd5len115dRQbQCYw",
+    authDomain: "food-delivery-app-24517.firebaseapp.com",
+    projectId: "food-delivery-app-24517",
+    storageBucket: "food-delivery-app-24517.firebasestorage.app",
+    messagingSenderId: "869509993841",
+    appId: "1:869509993841:web:d968d5491ca1719ec2d2d0",
+    measurementId: "G-3TG883F50G"
+  };
 
+  const app = firebase.initializeApp(firebaseConfig);
+  const analytics = firebase.analytics(app);
+  const db = firebase.firestore(app);
+</script>
+
+
+<style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .modal-backdrop { transition: opacity 0.3s ease-in-out; }
@@ -187,19 +197,6 @@
     </div>
 
     <script>
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyD0LJAPGx9sIi1Y9E6SdBlen115dRQbQCYw",
-            authDomain: "food-delivery-app-24517.firebaseapp.com",
-            projectId: "food-delivery-app-24517",
-            storageBucket: "food-delivery-app-24517.firebasestorage.app",
-            messagingSenderId: "869509993841",
-            appId: "1:869509993841:web:d968d5491ca1719ec2d2d0",
-            measurementId: "G-3TG0883F50"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
         // Dataset updated: Standalone Roti fully removed
         const menuItems = [
             { 
@@ -694,10 +691,41 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            renderMenuItems(menuItems);
-            updateCartUI();
-        });
+async function loadMenuItems() {
+  const menuContainer = document.getElementById('food-container');
+  try {
+    const querySnapshot = await firebase.firestore().collection('menu').get();
+    const items = [];
+    querySnapshot.forEach((doc) => {
+      items.push({ id: doc.id, ...doc.data() });
+    });
+    renderMenuItems(items);
+  } catch (error) {
+    console.error("Error fetching menu items: ", error);
+  }
+}
+async function loadMenuItems() {
+  const menuContainer = document.getElementById('food-container');
+  try {
+    const snapshot = await firebase.firestore().collection('menu').get();
+    console.log("Total documents found: ", snapshot.size);
+    const items = [];
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      items.push({ id: doc.id, ...data });
+    });
+    console.log("Items loaded: ", items);
+    renderMenuItems(items);
+  } catch (error) {
+    console.error("Error fetching menu items: ", error);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadMenuItems();
+  updateCartUI();
+});
+
     </script>
 </body>
 </html>

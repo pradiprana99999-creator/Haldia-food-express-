@@ -261,5 +261,30 @@
         }
       }
     </script>
+    <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "firebase/app";
+  import { getAnalytics } from "firebase/analytics";
+  import { getFirestore } from "firebase/firestore";
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDLjAPGx9s1iiY9EGSd5len115dRQbQCYw",
+    authDomain: "food-delivery-app-24517.firebaseapp.com",
+    projectId: "food-delivery-app-24517",
+    storageBucket: "food-delivery-app-24517.firebasestorage.app",
+    messagingSenderId: "869509993841",
+    appId: "1:869509993841:web:d968d5491ca1719ec2d2d0",
+    measurementId: "G-3TG883F50G"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+
+  // Initialize Cloud Firestore
+  const db = getFirestore(app);
+</script>
+
 </body>
 </html>
