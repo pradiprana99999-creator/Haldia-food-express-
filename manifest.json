@@ -1,0 +1,13 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Haldia Food Express",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "HFE",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "id": ".haldia food express ",
+  "description": "হালদিয়ার স্থানীয় খাবার ও রেস্টুরেন্টের নানা পদের দ্রুত হোম ডেলিভারি অ্যাপ।\""
+}
