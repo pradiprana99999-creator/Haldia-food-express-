@@ -1,36 +1,16 @@
 {
-  "name": "Haldia Food Express",
-  "short_name": "HFE",
-  "description": "Haldia Food Express is your go-to local food delivery app in Haldia, offering fresh morning and evening menus with seamless ordering and secure UPI payments for a delightful dining experience",
-  "start_url": "/",
-  "display": "standalone",
   "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Haldia Food Express",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "HFE",
+  "start_url": "/",
   "theme_color": "#ffffff",
-  "icons": [
-    {
-      "src": "./ff photos/192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "./ff photos/512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ],
-  "share_target": {
-    "action": "/share.html",
-    "method": "POST",
-    "enctype": "multipart/form-data",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "files": [
-        {
-          "name": "files",
-          "accept": ["image/*"]
-        }
-      ]
-    }
-  }
+  "id": "pradiprana99999@gmail.com",
+  "description": "Haldia Food Express is your go-to local food delivery app in Haldia, offering fresh morning and evening menus with seamless ordering and secure UPI payments for a delightful dining experience",
+  "categories": [
+    "food"
+  ]
 }
