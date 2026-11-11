@@ -9,6 +9,19 @@
   "start_url": "/",
   "theme_color": "#ffffff",
   "id": "pradiprana99999@gmail.com",
+   "icons": [
+    {
+      "src": "./launchericon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./launchericon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+
   "description": "Haldia Food Express is your go-to local food delivery app in Haldia, offering fresh morning and evening menus with seamless ordering and secure UPI payments for a delightful dining experience",
   "categories": [
     "food"
